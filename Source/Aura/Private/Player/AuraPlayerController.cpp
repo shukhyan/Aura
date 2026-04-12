@@ -55,6 +55,8 @@ void AAuraPlayerController::SetupInputComponent()
 
 	UAuraInputComponent* AuraInputComponent = CastChecked<UAuraInputComponent>(InputComponent);
 	AuraInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAuraPlayerController::Move);
+	AuraInputComponent->BindAction(ShiftAction, ETriggerEvent::Started, this, &AAuraPlayerController::ShiftPressed);
+	AuraInputComponent->BindAction(ShiftAction, ETriggerEvent::Completed, this, &AAuraPlayerController::ShiftReleased);
 	AuraInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::AbilityInputTagPressed, &ThisClass::AbilityInputTagReleased, &ThisClass::AbilityInputTagHeld);
 }
 
@@ -89,14 +91,12 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 		return;
 	}
 	
-	if (bTargeting)
+	if (IsValid(GetASC()))
 	{
-		if (IsValid(GetASC()))
-		{
-			GetASC()->AbilityInputTagReleased(InputTag);
-		}
+		GetASC()->AbilityInputTagReleased(InputTag);
 	}
-	else
+	
+	if (!bTargeting && !bShiftKeyDown)
 	{
 		const APawn* ControlledPawn = GetPawn();
 		if (FollowTime <= ShortPressThreshold && IsValid(ControlledPawn))
@@ -129,7 +129,7 @@ void AAuraPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 		return;
 	}
 
-	if (bTargeting)
+	if (bTargeting || bShiftKeyDown)
 	{
 		if (IsValid(GetASC()))
 		{
@@ -207,26 +207,4 @@ void AAuraPlayerController::CursorTrace()
 			ThisActor->HighlightActor();
 		}
 	}
-	// if (LastActor == nullptr)
-	// {
-	// 	if (ThisActor != nullptr)
-	// 	{
-	// 		ThisActor->HighlightActor();
-	// 	}
-	// }
-	// else
-	// {
-	// 	if (ThisActor == nullptr)
-	// 	{
-	// 		LastActor->UnHighlightActor();
-	// 	}
-	// 	else
-	// 	{
-	// 		if (LastActor != ThisActor)
-	// 		{
-	// 			LastActor->UnHighlightActor();
-	// 			ThisActor->HighlightActor();
-	// 		}
-	// 	}
-	// }
 }
